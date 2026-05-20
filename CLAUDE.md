@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Role Constraint
 
-Claude acts as **game architect and project manager only** — no code generation. Tasks are limited to design framework, technical architecture, and project management. Implementation is done by the user.
+Claude acts as a **highly capable code engineer** — responsible for design, architecture, and full implementation.
 
 ## Design Documents
 
@@ -21,17 +21,31 @@ All design docs live in `design/`:
 | File | Content |
 |------|---------|
 | `design/core-mechanics.md` | Player mechanics parameters (jump, dash, wall grab, movement, collectibles) |
-| `design/tech-architecture.md` | Unity project structure, module breakdown, state machine, data flow |
+| `design/tech-architecture.md` | Web/JS project structure, module breakdown, state machine, data flow |
+| `design/level-design-grammar.md` | Level design language, teaching sequence, difficulty curve, room templates |
+| `design/project-plan.md` | Development phases, milestones, timeline, risk management |
 
 ## Tech Stack
 
-- **Engine:** Unity 2023 LTS, Built-in Render Pipeline, 2D template
-- **Language:** C#
-- **Input:** Unity New Input System
-- **Physics:** Custom Raycast-based CharacterController (not Rigidbody2D) — frame-precise control
-- **Level authoring:** Unity Tilemap + CompositeCollider2D
-- **Level architecture:** One Scene per level, rooms spatially partitioned with Trigger-based transitions. 15 rooms per level, ~2-2.5 min per level.
-- **Target framerate:** 60fps (all timing parameters in design docs assume 60fps)
+- **Platform:** Web browser
+- **Language:** JavaScript (Vanilla, no framework, no build step)
+- **Rendering:** Canvas 2D API, 320×240 native resolution, `image-rendering: pixelated`
+- **Physics:** Custom Raycast-based collision (frame-precise, no engine physics)
+- **Input:** DOM keydown/keyup events
+- **Level data:** JS objects per level (15 rooms as 2D arrays + entity lists)
+- **Deployment:** Static files — any HTTP server or GitHub Pages
+- **Target framerate:** 60fps via `requestAnimationFrame`
+
+## Commands
+
+Zero setup — open `index.html` in a browser, or serve the root directory:
+
+```
+npx serve .        # Quick local server
+python -m http.server 8080  # Alternative
+```
+
+No build step, no package manager, no compilation.
 
 ## Key Mechanics (from core-mechanics.md)
 
@@ -49,23 +63,21 @@ Grounded → Airborne (jump) → Dashing (dash key) → back to Airborne
 Grounded/Airborne/Dashing/WallGrab → Dead (touch hazard) → respawn
 ```
 
-## Commands
-
-Unity project not yet created. Once initialized:
-- Editor: Open project in Unity Hub
-- Build: `File > Build Settings > Build` (TBD: CI pipeline)
-
 ## Architecture
 
 See `design/tech-architecture.md` for full module breakdown.
 
-Key modules planned:
-- `InputManager` — raw input → abstract actions + buffer/Coyote timers
-- `PlayerController` — state machine orchestrating sub-modules
-- `JumpModule` / `DashModule` / `WallGrabModule` — per-mechanic logic
-- `PhysicsIntegrator` — raycast-based custom movement + collision
-- `LevelManager` — room transitions, respawn, progress
-- `CameraAnchor` — fixed per-screen, no scrolling
+Key module files under `js/`:
+- `input.js` — raw input → abstract actions + buffer/Coyote timers
+- `player.js` — state machine orchestrating Jump/Dash/WallGrab
+- `physics.js` — raycast-based custom movement + collision
+- `level.js` — room transitions, respawn, progress
+- `objects.js` — GreenCrystal, MovingPlatform, CrumblingPlatform, Spike
+- `collectibles.js` — RedDot tracking, cross-room persistence
+- `camera.js` — fixed per-screen, room snap
+- `ui.js` — StaminaBar, DeathOverlay, CollectibleCounter
+- `config.js` — all tunable parameters in one place
+- `main.js` — game entry point + requestAnimationFrame loop
 
 ## Git
 
